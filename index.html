@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Capture Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 700px; margin: auto; }
+        label { font-weight: bold; }
+        .section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .log { background-color: #f9f9f9; padding: 10px; margin-top: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Incident Response Capture Tool</h2>
+
+    <!-- SITUATION: What happened? -->
+    <div class="section">
+        <label for="incidentDescription">📝 What happened?</label>
+        <textarea id="incidentDescription" placeholder="Describe the incident..." style="width:100%;" rows="3"></textarea>
+    </div>
+
+    <!-- TIME & LOCATION -->
+    <div class="section">
+        <label for="incidentTime">⏳ When did it happen?</label>
+        <input type="datetime-local" id="incidentTime">
+    </div>
+
+    <div class="section">
+        <label for="location">📍 Where did it happen?</label>
+        <input type="text" id="location" placeholder="Postcode, What3Words, Milepost, etc." style="width:100%;">
+    </div>
+
+    <!-- AFFECTED PARTIES & IMPACT -->
+    <div class="section">
+        <label>🚨 What is affected?</label><br>
+        <input type="checkbox" id="trains" value="Trains"> Trains<br>
+        <input type="checkbox" id="passengers" value="Passengers"> Passengers<br>
+        <input type="checkbox" id="staff" value="Railway Staff"> Railway Staff<br>
+        <input type="checkbox" id="infra" value="Infrastructure"> Infrastructure<br>
+        <input type="checkbox" id="third" value="Third Parties"> Third Parties<br>
+        <input type="checkbox" id="env" value="Environment"> Environmental Factors<br>
+    </div>
+
+    <!-- ASSESSMENT: Avoid Assumptions -->
+    <div class="section">
+        <label>🔍 Incident Impact Assessment:</label><br>
+        <input type="checkbox" id="immediateRisk" value="Immediate safety risk"> Immediate Safety Risk<br>
+        <input type="checkbox" id="longTermImpact" value="Long-term disruption"> Long-Term Disruption<br>
+        <input type="checkbox" id="serviceImpact" value="Service impact"> Impact on Train Services<br>
+        <input type="checkbox" id="publicConcern" value="Public/media attention"> Public/Media Concern<br>
+        <input type="checkbox" id="furtherInvestigation" value="Further investigation required"> Further Investigation Required<br>
+    </div>
+
+    <!-- WHO NEEDS TO BE INFORMED -->
+    <div class="section">
+        <label>📢 Who needs to be informed?</label><br>
+        <input type="checkbox" id="signaller" value="Signaller"> Signaller<br>
+        <input type="checkbox" id="bcp" value="British Transport Police"> British Transport Police (BTP)<br>
+        <input type="checkbox" id="nr" value="Network Rail Response Team"> Network Rail Response Team<br>
+        <input type="checkbox" id="toc" value="Train Operator"> Train Operator<br>
+        <input type="checkbox" id="local" value="Local Authorities"> Local Authorities<br>
+        <input type="checkbox" id="other" value="Other parties"> Other Parties<br>
+    </div>
+
+    <!-- CONFIRM NEXT STEPS -->
+    <div class="section">
+        <label>✅ Confirm Next Steps:</label><br>
+        <input type="checkbox" id="siteInspection" value="Site inspection required"> Site Inspection Required<br>
+        <input type="checkbox" id="trafficManagement" value="Traffic management needed"> Traffic Management Needed<br>
+        <input type="checkbox" id="publicCommunication" value="Public communication needed"> Public Communication Needed<br>
+        <input type="checkbox" id="furtherResponse" value="Further response needed"> Further Response Needed<br>
+    </div>
+
+    <button onclick="logIncident()">Log Incident</button>
+
+    <!-- INCIDENT LOG -->
+    <div id="incidentLog" class="log">
+        <h3>Incident Log</h3>
+        <p>No incidents logged yet.</p>
+    </div>
+</div>
+
+<script>
+function logIncident() {
+    let incidentDescription = document.getElementById("incidentDescription").value;
+    let incidentTime = document.getElementById("incidentTime").value;
+    let location = document.getElementById("location").value;
+
+    let affected = [];
+    document.querySelectorAll('[id^="trains"], [id^="passengers"], [id^="staff"], [id^="infra"], [id^="third"], [id^="env"]').forEach(cb => {
+        if (cb.checked) affected.push(cb.value);
+    });
+
+    let assessment = [];
+    document.querySelectorAll('[id^="immediateRisk"], [id^="longTermImpact"], [id^="serviceImpact"], [id^="publicConcern"], [id^="furtherInvestigation"]').forEach(cb => {
+        if (cb.checked) assessment.push(cb.value);
+    });
+
+    let informed = [];
+    document.querySelectorAll('[id^="signaller"], [id^="bcp"], [id^="nr"], [id^="toc"], [id^="local"], [id^="other"]').forEach(cb => {
+        if (cb.checked) informed.push(cb.value);
+    });
+
+    let nextSteps = [];
+    document.querySelectorAll('[id^="siteInspection"], [id^="trafficManagement"], [id^="publicCommunication"], [id^="furtherResponse"]').forEach(cb => {
+        if (cb.checked) nextSteps.push(cb.value);
+    });
+
+    if (!incidentDescription || !incidentTime || !location) {
+        alert("Please fill in all required fields (What happened, Time, and Location).");
+        return;
+    }
+
+    let logEntry = `
+        <p><strong>📝 Incident:</strong> ${incidentDescription}</p>
+        <p><strong>⏳ Time:</strong> ${incidentTime}</p>
+        <p><strong>📍 Location:</strong> ${location}</p>
+        <p><strong>🚨 Affected:</strong> ${affected.join(", ") || "None Selected"}</p>
+        <p><strong>🔍 Impact Assessment:</strong> ${assessment.join(", ") || "None Selected"}</p>
+        <p><strong>📢 Notified Parties:</strong> ${informed.join(", ") || "None Selected"}</p>
+        <p><strong>✅ Next Steps:</strong> ${nextSteps.join(", ") || "None Selected"}</p>
+        <hr>
+    `;
+
+    document.getElementById("incidentLog").innerHTML += logEntry;
+}
+</script>
+
+</body>
+</html>
