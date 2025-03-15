@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Logger</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        label { font-weight: bold; }
+        .section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .log { background-color: #f9f9f9; padding: 10px; margin-top: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Incident Response Logger</h2>
+
+    <div class="section">
+        <label for="incidentType">Incident Type:</label>
+        <select id="incidentType">
+            <option value="">Select Incident Type</option>
+            <option value="Person on track">Person on track</option>
+            <option value="Trespasser near railway">Trespasser near railway</option>
+            <option value="Train failure">Train failure</option>
+            <option value="Signal failure">Signal failure</option>
+            <option value="Bridge strike">Bridge strike</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <div class="section">
+        <label for="location">Location Details:</label>
+        <input type="text" id="location" placeholder="Postcode, What3Words, Milepost, etc." style="width:100%;">
+    </div>
+
+    <div class="section">
+        <label for="reporter">Who Reported It?</label>
+        <input type="text" id="reporter" placeholder="e.g., Train Driver, Public, BTP" style="width:100%;">
+    </div>
+
+    <div class="section">
+        <label>Affected Areas:</label><br>
+        <input type="checkbox" id="trains" value="Trains Stopped"> Trains Stopped<br>
+        <input type="checkbox" id="passengers" value="Passengers Affected"> Passengers Affected<br>
+        <input type="checkbox" id="staff" value="Railway Staff Involved"> Railway Staff Involved<br>
+        <input type="checkbox" id="infra" value="Infrastructure Damage"> Infrastructure Damage<br>
+        <input type="checkbox" id="third" value="Third Party Impact"> Third Party Impact<br>
+    </div>
+
+    <div class="section">
+        <label>Who Has Been Informed?</label><br>
+        <input type="checkbox" id="signaller" value="Signaller"> Signaller<br>
+        <input type="checkbox" id="bcp" value="British Transport Police"> BTP<br>
+        <input type="checkbox" id="nr" value="Network Rail Response Team"> Network Rail Response Team<br>
+        <input type="checkbox" id="toc" value="Train Operator"> Train Operator<br>
+        <input type="checkbox" id="local" value="Local Authorities"> Local Authorities<br>
+    </div>
+
+    <div class="section">
+        <label>Required Actions:</label><br>
+        <input type="checkbox" id="block" value="Track Blocked"> Track Blocked<br>
+        <input type="checkbox" id="detour" value="Train Detours"> Train Detours<br>
+        <input type="checkbox" id="rescue" value="Emergency Rescue Needed"> Emergency Rescue Needed<br>
+        <input type="checkbox" id="inspection" value="Structural Inspection Needed"> Structural Inspection Needed<br>
+    </div>
+
+    <button onclick="logIncident()">Log Incident</button>
+
+    <div id="incidentLog" class="log">
+        <h3>Incident Log</h3>
+        <p>No incidents logged yet.</p>
+    </div>
+</div>
+
+<script>
+function logIncident() {
+    let incidentType = document.getElementById("incidentType").value;
+    let location = document.getElementById("location").value;
+    let reporter = document.getElementById("reporter").value;
+
+    let affected = [];
+    document.querySelectorAll('[id^="trains"], [id^="passengers"], [id^="staff"], [id^="infra"], [id^="third"]').forEach(cb => {
+        if (cb.checked) affected.push(cb.value);
+    });
+
+    let informed = [];
+    document.querySelectorAll('[id^="signaller"], [id^="bcp"], [id^="nr"], [id^="toc"], [id^="local"]').forEach(cb => {
+        if (cb.checked) informed.push(cb.value);
+    });
+
+    let actions = [];
+    document.querySelectorAll('[id^="block"], [id^="detour"], [id^="rescue"], [id^="inspection"]').forEach(cb => {
+        if (cb.checked) actions.push(cb.value);
+    });
+
+    if (!incidentType || !location || !reporter) {
+        alert("Please fill in all required fields (Incident Type, Location, Reporter).");
+        return;
+    }
+
+    let logEntry = `
+        <p><strong>Incident Type:</strong> ${incidentType}</p>
+        <p><strong>Location:</strong> ${location}</p>
+        <p><strong>Reported By:</strong> ${reporter}</p>
+        <p><strong>Affected Areas:</strong> ${affected.length ? affected.join(", ") : "None Selected"}</p>
+        <p><strong>Who Has Been Informed:</strong> ${informed.length ? informed.join(", ") : "None Selected"}</p>
+        <p><strong>Required Actions:</strong> ${actions.length ? actions.join(", ") : "None Selected"}</p>
+        <hr>
+    `;
+
+    document.getElementById("incidentLog").innerHTML += logEntry;
+}
+</script>
+
+</body>
+</html>
