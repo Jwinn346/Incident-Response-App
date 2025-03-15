@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response (S.T.A.R.T. Method)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 700px; margin: auto; }
+        label { font-weight: bold; }
+        .section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .log { background-color: #f9f9f9; padding: 10px; margin-top: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Incident Response Logger (S.T.A.R.T. Method)</h2>
+
+    <!-- S - Situation -->
+    <div class="section">
+        <label for="incidentType">🔹 Situation: What has happened?</label>
+        <select id="incidentType">
+            <option value="">Select Incident Type</option>
+            <option value="Person on track">Person on track</option>
+            <option value="Trespasser near railway">Trespasser near railway</option>
+            <option value="Train failure">Train failure</option>
+            <option value="Signal failure">Signal failure</option>
+            <option value="Bridge strike">Bridge strike</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <!-- T - Time & Location -->
+    <div class="section">
+        <label for="incidentTime">⏳ Time: When did it happen?</label>
+        <input type="datetime-local" id="incidentTime">
+    </div>
+
+    <div class="section">
+        <label for="location">📍 Location: Where did it occur?</label>
+        <input type="text" id="location" placeholder="Postcode, What3Words, Milepost, etc." style="width:100%;">
+    </div>
+
+    <!-- A - Affected Parties -->
+    <div class="section">
+        <label>🚨 Affected Parties & Impact:</label><br>
+        <input type="checkbox" id="trains" value="Trains Stopped"> Trains Stopped<br>
+        <input type="checkbox" id="passengers" value="Passengers Affected"> Passengers Affected<br>
+        <input type="checkbox" id="staff" value="Railway Staff Involved"> Railway Staff Involved<br>
+        <input type="checkbox" id="infra" value="Infrastructure Damage"> Infrastructure Damage<br>
+        <input type="checkbox" id="third" value="Third Party Impact"> Third Party Impact<br>
+    </div>
+
+    <!-- R - Risks & Hazards -->
+    <div class="section">
+        <label>⚠️ Risks & Hazards:</label><br>
+        <input type="checkbox" id="liveRails" value="Near live rails"> Near Live Rails<br>
+        <input type="checkbox" id="aggressive" value="Aggressive person"> Aggressive Person<br>
+        <input type="checkbox" id="weather" value="Severe weather impact"> Severe Weather Impact<br>
+        <input type="checkbox" id="hazmat" value="Hazardous materials involved"> Hazardous Materials Present<br>
+    </div>
+
+    <!-- T - Traffic & Response -->
+    <div class="section">
+        <label>🚦 Traffic & Response Needed:</label><br>
+        <input type="checkbox" id="signaller" value="Signaller"> Signaller Informed<br>
+        <input type="checkbox" id="bcp" value="British Transport Police"> British Transport Police Notified<br>
+        <input type="checkbox" id="nr" value="Network Rail Response Team"> Network Rail Response Team Informed<br>
+        <input type="checkbox" id="toc" value="Train Operator"> Train Operator Notified<br>
+        <input type="checkbox" id="local" value="Local Authorities"> Local Authorities Contacted<br>
+        <input type="checkbox" id="block" value="Track Blocked"> Track Blocked<br>
+        <input type="checkbox" id="detour" value="Train Detours"> Train Detours Required<br>
+    </div>
+
+    <button onclick="logIncident()">Log Incident</button>
+
+    <div id="incidentLog" class="log">
+        <h3>Incident Log</h3>
+        <p>No incidents logged yet.</p>
+    </div>
+</div>
+
+<script>
+function logIncident() {
+    let incidentType = document.getElementById("incidentType").value;
+    let incidentTime = document.getElementById("incidentTime").value;
+    let location = document.getElementById("location").value;
+
+    let affected = [];
+    document.querySelectorAll('[id^="trains"], [id^="passengers"], [id^="staff"], [id^="infra"], [id^="third"]').forEach(cb => {
+        if (cb.checked) affected.push(cb.value);
+    });
+
+    let risks = [];
+    document.querySelectorAll('[id^="liveRails"], [id^="aggressive"], [id^="weather"], [id^="hazmat"]').forEach(cb => {
+        if (cb.checked) risks.push(cb.value);
+    });
+
+    let responses = [];
+    document.querySelectorAll('[id^="signaller"], [id^="bcp"], [id^="nr"], [id^="toc"], [id^="local"], [id^="block"], [id^="detour"]').forEach(cb => {
+        if (cb.checked) responses.push(cb.value);
+    });
+
+    if (!incidentType || !incidentTime || !location) {
+        alert("Please fill in all required fields (Incident Type, Time, and Location).");
+        return;
+    }
+
+    let logEntry = `
+        <p><strong>🔹 Situation:</strong> ${incidentType}</p>
+        <p><strong>⏳ Time:</strong> ${incidentTime}</p>
+        <p><strong>📍 Location:</strong> ${location}</p>
+        <p><strong>🚨 Affected Parties:</strong> ${affected.length ? affected.join(", ") : "None Selected"}</p>
+        <p><strong>⚠️ Risks:</strong> ${risks.length ? risks.join(", ") : "None Selected"}</p>
+        <p><strong>🚦 Responses Taken:</strong> ${responses.length ? responses.join(", ") : "None Selected"}</p>
+        <hr>
+    `;
+
+    document.getElementById("incidentLog").innerHTML += logEntry;
+}
+</script>
+
+</body>
+</html>
