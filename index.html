@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Capture</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; padding: 10px; }
+        .container { max-width: 700px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        h2, h3 { color: #333; }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        button { margin-top: 15px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .summary { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Incident Response Capture</h2>
+        <form id="incidentForm">
+            <h3>Step 1: Caller Introduction & Key Facts</h3>
+            <label for="whatHappened">What happened?</label>
+            <textarea id="whatHappened" required></textarea>
+
+            <label for="whereHappened">Where did it happen?</label>
+            <input type="text" id="whereHappened" required>
+
+            <label for="whoAffected">Who is affected?</label>
+            <input type="text" id="whoAffected" required>
+
+            <label for="isOngoing">Is the incident ongoing?</label>
+            <input type="text" id="isOngoing" required>
+
+            <h3>Step 2: Location Confirmation</h3>
+            <label for="onSite">Are you on-site or reporting second-hand?</label>
+            <input type="text" id="onSite" required>
+
+            <label for="landmarks">Visible landmarks or railway references?</label>
+            <input type="text" id="landmarks" required>
+
+            <label for="locationDetails">Postcode, What3Words, Milepost, or Signal ID</label>
+            <input type="text" id="locationDetails" required>
+
+            <h3>Step 3: Immediate Risks & Impact</h3>
+            <label for="peopleRisk">People at risk?</label>
+            <textarea id="peopleRisk" required></textarea>
+
+            <label for="infraDamage">Infrastructure damage?</label>
+            <textarea id="infraDamage" required></textarea>
+
+            <label for="trainInvolvement">Train involvement?</label>
+            <textarea id="trainInvolvement" required></textarea>
+
+            <label for="immediateDanger">Is anyone in immediate danger?</label>
+            <input type="text" id="immediateDanger" required>
+
+            <label for="worsen">Could the situation worsen?</label>
+            <input type="text" id="worsen" required>
+
+            <label for="emergencyResponse">Is an emergency response needed now?</label>
+            <input type="text" id="emergencyResponse" required>
+
+            <h3>Step 4: Preventing Assumptions & Missing Information</h3>
+            <label for="confirmKeyDetails">Confirm key details (repeat back to caller)</label>
+            <textarea id="confirmKeyDetails" required></textarea>
+
+            <label for="whatElse">What else should I know?</label>
+            <textarea id="whatElse" required></textarea>
+
+            <label for="identifyGaps">Identify missing gaps</label>
+            <textarea id="identifyGaps" required></textarea>
+
+            <h3>Step 5: Confirm Actions & Inform Key People</h3>
+            <label for="signaller">Notified Signaller?</label>
+            <input type="text" id="signaller" required>
+
+            <label for="police">Notified British Transport Police / Local Police?</label>
+            <input type="text" id="police" required>
+
+            <label for="networkRail">Notified Network Rail Response Team?</label>
+            <input type="text" id="networkRail" required>
+
+            <label for="trainOperator">Notified Train Operator Control?</label>
+            <input type="text" id="trainOperator" required>
+
+            <label for="emergencyServices">Notified Emergency Services (Fire, Ambulance)?</label>
+            <input type="text" id="emergencyServices" required>
+
+            <label for="clearActionPlan">Final check: Do I have a clear action plan?</label>
+            <textarea id="clearActionPlan" required></textarea>
+
+            <button type="button" onclick="generateSummary()">Generate Summary</button>
+        </form>
+
+        <div id="summary" class="summary">
+            <h2>Incident Summary</h2>
+            <p><strong>What Happened:</strong> <span id="summaryWhat"></span></p>
+            <p><strong>Where:</strong> <span id="summaryWhere"></span></p>
+            <p><strong>Who is Affected:</strong> <span id="summaryWho"></span></p>
+            <p><strong>Ongoing Status:</strong> <span id="summaryOngoing"></span></p>
+            <p><strong>Risks & Impact:</strong> <span id="summaryRisks"></span></p>
+            <p><strong>Confirmed Details:</strong> <span id="summaryConfirmed"></span></p>
+            <p><strong>Actions Taken:</strong> <span id="summaryActions"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function generateSummary() {
+            document.getElementById('summaryWhat').innerText = document.getElementById('whatHappened').value;
+            document.getElementById('summaryWhere').innerText = document.getElementById('whereHappened').value;
+            document.getElementById('summaryWho').innerText = document.getElementById('whoAffected').value;
+            document.getElementById('summaryOngoing').innerText = document.getElementById('isOngoing').value;
+
+            let risks = `People: ${document.getElementById('peopleRisk').value}, Infra: ${document.getElementById('infraDamage').value}, Train: ${document.getElementById('trainInvolvement').value}`;
+            document.getElementById('summaryRisks').innerText = risks;
+
+            let confirmed = `Confirmed: ${document.getElementById('confirmKeyDetails').value}, Gaps: ${document.getElementById('identifyGaps').value}`;
+            document.getElementById('summaryConfirmed').innerText = confirmed;
+
+            let actions = `Signaller: ${document.getElementById('signaller').value}, Police: ${document.getElementById('police').value}, Emergency: ${document.getElementById('emergencyServices').value}, Plan: ${document.getElementById('clearActionPlan').value}`;
+            document.getElementById('summaryActions').innerText = actions;
+
+            document.getElementById('summary').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
