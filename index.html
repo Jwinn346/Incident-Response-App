@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Capture</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; padding: 10px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        h2 { color: #333; }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        button { margin-top: 15px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .summary { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Incident Response Capture</h2>
+        <form id="incidentForm">
+            <label for="whatHappened">What happened?</label>
+            <textarea id="whatHappened" required></textarea>
+
+            <label for="whereHappened">Where did it happen?</label>
+            <input type="text" id="whereHappened" required>
+
+            <label for="whoAffected">Who is affected?</label>
+            <input type="text" id="whoAffected" required>
+
+            <label for="isOngoing">Is it ongoing?</label>
+            <input type="text" id="isOngoing" required>
+
+            <label for="risks">Immediate risks?</label>
+            <textarea id="risks" required></textarea>
+
+            <label for="actions">What actions have been taken?</label>
+            <textarea id="actions" required></textarea>
+
+            <button type="button" onclick="generateSummary()">Generate Summary</button>
+        </form>
+
+        <div id="summary" class="summary">
+            <h2>Incident Summary</h2>
+            <p><strong>What Happened:</strong> <span id="summaryWhat"></span></p>
+            <p><strong>Where:</strong> <span id="summaryWhere"></span></p>
+            <p><strong>Who is Affected:</strong> <span id="summaryWho"></span></p>
+            <p><strong>Ongoing Status:</strong> <span id="summaryOngoing"></span></p>
+            <p><strong>Immediate Risks:</strong> <span id="summaryRisks"></span></p>
+            <p><strong>Actions Taken:</strong> <span id="summaryActions"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function generateSummary() {
+            document.getElementById('summaryWhat').innerText = document.getElementById('whatHappened').value;
+            document.getElementById('summaryWhere').innerText = document.getElementById('whereHappened').value;
+            document.getElementById('summaryWho').innerText = document.getElementById('whoAffected').value;
+            document.getElementById('summaryOngoing').innerText = document.getElementById('isOngoing').value;
+            document.getElementById('summaryRisks').innerText = document.getElementById('risks').value;
+            document.getElementById('summaryActions').innerText = document.getElementById('actions').value;
+
+            document.getElementById('summary').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
