@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Capture Guide</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .prompt {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #aiQuestionContainer, #incidentTitle, #finalReport {
+            display: none;
+            margin-top: 30px;
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .copy-btn {
+            background-color: #28a745;
+        }
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Incident Response Capture Guide</h1>
+    <div class="container">
+        <div class="section">
+            <label>Time of Call 📌</label>
+            <textarea id="timeOfCall"></textarea>
+        </div>
+        <div class="section">
+            <label>Who’s Calling 📌</label>
+            <textarea id="caller"></textarea>
+        </div>
+        <div class="section">
+            <label>Location 📌</label>
+            <textarea id="location"></textarea>
+        </div>
+        <div class="section">
+            <label>Incident Description 📌</label>
+            <textarea id="incidentDescription" oninput="analyzeIncidentText()"></textarea>
+        </div>
+        <div class="section">
+            <label>Response Staff and ETAs 📌</label>
+            <textarea id="response"></textarea>
+        </div>
+
+        <div class="button-container">
+            <button onclick="validateAndGenerateReport()">Generate Report</button>
+        </div>
+
+        <div id="aiQuestionContainer">
+            <h2>⚠️ AI Follow-Up Question</h2>
+            <p id="aiQuestionText"></p>
+            <textarea id="aiAnswer"></textarea>
+            <div class="button-container">
+                <button onclick="submitAIAnswer()">Submit Answer</button>
+            </div>
+        </div>
+
+        <div id="incidentTitle">
+            <h2>📌 Incident Title</h2>
+            <p id="generatedTitle"></p>
+        </div>
+
+        <div id="finalReport">
+            <h2>Final Incident Report</h2>
+            <pre id="reportContent"></pre>
+            <div class="button-container">
+                <button class="copy-btn" onclick="copyReport()">Copy Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let useModel;
+        let missingFields = [];
+
+        async function loadModel() {
+            useModel = await use.load();
+            console.log("TensorFlow.js NLP model loaded!");
+        }
+
+        async function analyzeIncidentText() {
+            let text = document.getElementById("incidentDescription").value.trim();
+            if (text.length < 5) return;
+
+            const embeddings = await useModel.embed([text]);
+            const incidentType = classifyIncident(text);
+            const location = document.getElementById("location").value.trim();
+            const title = `${incidentType} – ${location}`;
+            
+            document.getElementById("generatedTitle").textContent = title;
+            document.getElementById("incidentTitle").style.display = "block";
+        }
+
+        function classifyIncident(text) {
+            if (text.includes("trespasser")) return "Trespasser on Tracks";
+            if (text.includes("medical emergency")) return "Medical Emergency";
+            if (text.includes("vehicle on tracks")) return "Vehicle Obstruction";
+            return "Incident Reported";
+        }
+
+        function validateAndGenerateReport() {
+            let fields = ["timeOfCall", "caller", "location", "incidentDescription", "response"];
+            missingFields = fields.filter(field => document.getElementById(field).value.trim() === "");
+
+            if (missingFields.length > 0) {
+                askNextMissingField();
+            } else {
+                generateReport();
+            }
+        }
+
+        function askNextMissingField() {
+            if (missingFields.length > 0) {
+                let nextField = missingFields.shift();
+                let fieldLabel = document.querySelector(`label[for='${nextField}']`)?.textContent || nextField;
+                document.getElementById("aiQuestionText").textContent = `Please provide details for: ${fieldLabel}`;
+                document.getElementById("aiQuestionContainer").style.display = "block";
+            } else {
+                generateReport();
+            }
+        }
+
+        function submitAIAnswer() {
+            let answer = document.getElementById("aiAnswer").value.trim();
+            if (answer) {
+                let currentField = missingFields.shift();
+                document.getElementById(currentField).value = answer;
+                document.getElementById("aiAnswer").value = "";
+                document.getElementById("aiQuestionContainer").style.display = "none";
+                askNextMissingField();
+            }
+        }
+
+        function generateReport() {
+            let reportText = `
+Incident start time – ${document.getElementById("timeOfCall").value.trim()}
+Reported by – ${document.getElementById("caller").value.trim()}
+Location – ${document.getElementById("location").value.trim()}
+Incident Information – ${document.getElementById("incidentDescription").value.trim()}
+Response Staff and ETAs – ${document.getElementById("response").value.trim()}
+            `;
+
+            document.getElementById("reportContent").textContent = reportText;
+            document.getElementById("finalReport").style.display = "block";
+        }
+
+        function copyReport() {
+            navigator.clipboard.writeText(document.getElementById("reportContent").textContent).then(() => alert("Report copied!"));
+        }
+
+        loadModel();
+    </script>
+</body>
+</html>
