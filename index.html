@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Capture Guide</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; padding: 20px; max-width: 900px; margin: auto; background-color: #f8f9fa; }
+        h1 { text-align: center; }
+        .container { background: white; padding: 20px; border-radius: 5px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); }
+        .section { margin-bottom: 20px; padding: 15px; background: #ffffff; border: 1px solid #ddd; border-radius: 5px; }
+        .section label { font-weight: bold; display: block; margin-bottom: 5px; }
+        textarea { width: 100%; height: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 5px; resize: none; }
+        .button-container { text-align: center; margin-top: 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; background-color: #007bff; color: white; border-radius: 5px; }
+        button:hover { background-color: #0056b3; }
+        #aiQuestionContainer, #incidentTitle, #finalReport { display: none; margin-top: 30px; background: #e9ecef; padding: 15px; border-radius: 5px; border: 1px solid #ccc; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; }
+        .copy-btn { background-color: #28a745; }
+        .copy-btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <h1>Incident Response Capture Guide</h1>
+    <div class="container">
+        <div class="section"><label>Time of Call 📌</label><textarea id="timeOfCall"></textarea></div>
+        <div class="section"><label>Who’s Calling 📌</label><textarea id="caller"></textarea></div>
+        <div class="section"><label>Location 📌</label><textarea id="location"></textarea></div>
+        <div class="section"><label>Incident Description 📌</label><textarea id="incidentDescription" oninput="analyzeIncidentText()"></textarea></div>
+        <div class="section"><label>EDDY - Exact Location 📌</label><textarea id="exactLocation"></textarea></div>
+        <div class="section"><label>EDDY - Direction of Travel 📌</label><textarea id="direction"></textarea></div>
+        <div class="section"><label>EDDY - Detailed Description 📌</label><textarea id="description"></textarea></div>
+        <div class="section"><label>EDDY - Youth 📌</label><textarea id="youth"></textarea></div>
+        <div class="section"><label>Response Staff and ETAs 📌</label><textarea id="response"></textarea></div>
+
+        <div class="button-container">
+            <button onclick="validateAndGenerateReport()">Generate Report</button>
+        </div>
+
+        <div id="aiQuestionContainer">
+            <h2>⚠️ AI Follow-Up Question</h2>
+            <p id="aiQuestionText"></p>
+            <textarea id="aiAnswer"></textarea>
+            <div class="button-container"><button onclick="submitAIAnswer()">Submit Answer</button></div>
+        </div>
+
+        <div id="incidentTitle">
+            <h2>📌 Incident Title</h2>
+            <p id="generatedTitle"></p>
+        </div>
+
+        <div id="finalReport">
+            <h2>Final Incident Report</h2>
+            <pre id="reportContent"></pre>
+            <div class="button-container"><button class="copy-btn" onclick="copyReport()">Copy Report</button></div>
+        </div>
+    </div>
+
+    <script>
+        let useModel;
+        async function loadModel() {
+            useModel = await use.load();
+            console.log("🚀 AI Model Loaded!");
+        }
+
+        async function analyzeIncidentText() {
+            let text = document.getElementById("incidentDescription").value.trim();
+            if (text.length < 5) return;
+
+            const embeddings = await useModel.embed([text]);
+            console.log("📊 AI Processed:", embeddings.arraySync());
+
+            const incidentType = classifyIncident(text);
+            const extractedData = extractStructuredDetails(text);
+
+            document.getElementById("generatedTitle").textContent = `${incidentType} – ${document.getElementById("location").value.trim()}`;
+            document.getElementById("incidentTitle").style.display = "block";
+
+            // Auto-fill extracted details
+            document.getElementById("exactLocation").value = extractedData.exactLocation || "";
+            document.getElementById("direction").value = extractedData.direction || "";
+            document.getElementById("description").value = extractedData.details || "";
+            document.getElementById("youth").value = extractedData.youth || "";
+        }
+
+        function classifyIncident(text) {
+            const lowerText = text.toLowerCase();
+            if (lowerText.includes("trespasser")) return "Trespasser on Tracks";
+            if (lowerText.includes("medical emergency")) return "Medical Emergency";
+            if (lowerText.includes("vehicle on tracks")) return "Vehicle Obstruction";
+            if (lowerText.includes("person near railway")) return "Concern for Welfare";
+            return "Incident Reported";
+        }
+
+        function extractStructuredDetails(text) {
+            let details = { exactLocation: "", direction: "", details: "", youth: "" };
+
+            const locationMatch = text.match(/near (.*?) station|at (.*?) bridge|by (.*?) crossing/i);
+            if (locationMatch) details.exactLocation = locationMatch[1] || locationMatch[2] || locationMatch[3];
+
+            const directionMatch = text.match(/moving (toward|away) the railway/i);
+            if (directionMatch) details.direction = directionMatch[1];
+
+            const youthMatch = text.match(/young person|child|teenager|approximately (\d+) years old/i);
+            if (youthMatch) details.youth = youthMatch[1] ? `${youthMatch[1]} years old` : "Young individual";
+
+            return details;
+        }
+
+        let missingFields = [];
+        function validateAndGenerateReport() {
+            let fields = ["timeOfCall", "caller", "location", "incidentDescription", "response"];
+            missingFields = fields.filter(field => document.getElementById(field).value.trim() === "");
+            if (missingFields.length > 0) {
+                askNextMissingField();
+            } else {
+                generateReport();
+            }
+        }
+
+        function askNextMissingField() {
+            if (missingFields.length > 0) {
+                let nextField = missingFields.shift();
+                document.getElementById("aiQuestionText").textContent = `Please provide: ${nextField}`;
+                document.getElementById("aiQuestionContainer").style.display = "block";
+            } else {
+                generateReport();
+            }
+        }
+
+        function submitAIAnswer() {
+            let answer = document.getElementById("aiAnswer").value.trim();
+            if (answer) {
+                let currentField = missingFields.shift();
+                document.getElementById(currentField).value = answer;
+                document.getElementById("aiAnswer").value = "";
+                document.getElementById("aiQuestionContainer").style.display = "none";
+                askNextMissingField();
+            }
+        }
+
+        function generateReport() {
+            let reportText = `
+Incident start time – ${document.getElementById("timeOfCall").value.trim()}
+Reported by – ${document.getElementById("caller").value.trim()}
+Location – ${document.getElementById("location").value.trim()}
+Incident Information – ${document.getElementById("incidentDescription").value.trim()}
+Response Staff and ETAs – ${document.getElementById("response").value.trim()}
+            `;
+            document.getElementById("reportContent").textContent = reportText;
+            document.getElementById("finalReport").style.display = "block";
+        }
+
+        function copyReport() {
+            navigator.clipboard.writeText(document.getElementById("reportContent").textContent).then(() => alert("Report copied!"));
+        }
+
+        loadModel();
+    </script>
+</body>
+</html>
