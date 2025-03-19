@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Capture Guide (AI-Enhanced)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nlp.js@4.22.2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .prompt {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #aiQuestionContainer, #finalReport {
+            display: none;
+            margin-top: 30px;
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .copy-btn {
+            background-color: #28a745;
+        }
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Incident Response Capture Guide (AI-Enhanced)</h1>
+    <div class="container">
+        <div class="section">
+            <label>Time of Call 📌</label>
+            <p class="prompt">⏰ Record the exact time the call was received.</p>
+            <textarea id="timeOfCall"></textarea>
+        </div>
+        <div class="section">
+            <label>Who’s Calling 📌</label>
+            <p class="prompt">📞 Identify the caller (Signaller, emergency service, train driver, public).</p>
+            <textarea id="caller"></textarea>
+        </div>
+        <div class="section">
+            <label>Location 📌</label>
+            <p class="prompt">📍 Where is this happening? Provide the nearest landmark or track mileage.</p>
+            <textarea id="location"></textarea>
+        </div>
+        <div class="section">
+            <label>Incident Details 📌</label>
+            <p class="prompt">❓ What exactly is happening? Provide a full description.</p>
+            <textarea id="incidentDescription"></textarea>
+        </div>
+        <div class="section">
+            <label>EDDY - Exact Location 📌</label>
+            <p class="prompt">📍 Where exactly is the trespasser? On the track, embankment, or nearby?</p>
+            <textarea id="exactLocation"></textarea>
+        </div>
+        <div class="section">
+            <label>EDDY - Direction of Travel 📌</label>
+            <p class="prompt">➡️ Which way is the trespasser moving? Toward or away from the railway?</p>
+            <textarea id="direction"></textarea>
+        </div>
+        <div class="section">
+            <label>EDDY - Detailed Description 📌</label>
+            <p class="prompt">🧐 Describe their appearance: clothing, age, number of people?</p>
+            <textarea id="description"></textarea>
+        </div>
+        <div class="section">
+            <label>EDDY - Youth 📌</label>
+            <p class="prompt">👶 Are they a child or young person? Approximate age?</p>
+            <textarea id="youth"></textarea>
+        </div>
+        <div class="section">
+            <label>Response Staff and ETAs 📌</label>
+            <p class="prompt">🚑 Who is responding? Include estimated arrival times.</p>
+            <textarea id="response"></textarea>
+        </div>
+
+        <div class="button-container">
+            <button onclick="validateAndGenerateReport()">Generate Report</button>
+        </div>
+
+        <div id="aiQuestionContainer">
+            <h2>⚠️ AI Follow-Up Question</h2>
+            <p id="aiQuestionText"></p>
+            <textarea id="aiAnswer"></textarea>
+            <div class="button-container">
+                <button onclick="submitAIAnswer()">Submit Answer</button>
+            </div>
+        </div>
+
+        <div id="finalReport">
+            <h2>Final Incident Report</h2>
+            <pre id="reportContent"></pre>
+            <div class="button-container">
+                <button class="copy-btn" onclick="copyReport()">Copy Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let missingFieldQueue = [];
+        let currentMissingField = "";
+
+        function validateAndGenerateReport() {
+            let fields = {
+                "timeOfCall": "Time of Call",
+                "caller": "Who’s Calling",
+                "location": "Location",
+                "incidentDescription": "Incident Description",
+                "exactLocation": "Exact Location",
+                "direction": "Direction of Travel",
+                "description": "Detailed Description",
+                "youth": "Youth (approximate age)",
+                "response": "Response Staff and ETAs"
+            };
+
+            missingFieldQueue = [];
+            for (let key in fields) {
+                let value = document.getElementById(key).value.trim();
+                if (!value) {
+                    missingFieldQueue.push({ id: key, question: `Can you clarify the ${fields[key]}?` });
+                }
+            }
+
+            if (missingFieldQueue.length > 0) {
+                askNextAIQuestion();
+            } else {
+                generateReport();
+            }
+        }
+
+        function askNextAIQuestion() {
+            if (missingFieldQueue.length > 0) {
+                let nextQuestion = missingFieldQueue.shift();
+                currentMissingField = nextQuestion.id;
+                document.getElementById("aiQuestionText").textContent = nextQuestion.question;
+                document.getElementById("aiQuestionContainer").style.display = "block";
+            } else {
+                generateReport();
+            }
+        }
+
+        function submitAIAnswer() {
+            let answer = document.getElementById("aiAnswer").value.trim();
+            if (answer) {
+                document.getElementById(currentMissingField).value = answer;
+                document.getElementById("aiAnswer").value = "";
+                document.getElementById("aiQuestionContainer").style.display = "none";
+                askNextAIQuestion();
+            }
+        }
+    </script>
+</body>
+</html>
